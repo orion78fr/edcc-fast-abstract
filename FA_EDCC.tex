@@ -1,0 +1,118 @@
+\documentclass[conference]{IEEEtran}
+
+\usepackage[utf8]{inputenc}
+\usepackage{cite}
+\usepackage{array}
+\usepackage{stfloats}
+\usepackage{graphicx}
+\usepackage{rotating}
+\usepackage[justification=centering]{caption}
+\usepackage{subcaption}
+
+
+\begin{document}
+
+\title{Scalability and availability for massively multiplayer online games}
+
+
+\author{\IEEEauthorblockN{Guillaume Turchini}
+\IEEEauthorblockA{LIP6\\
+Université Pierre et Marie Curie\\
+Paris, France}
+\and
+\IEEEauthorblockN{Sebastien Monnet}
+\IEEEauthorblockA{LIP6\\
+Université Pierre et Marie Curie\\
+Paris, France}
+\and
+\IEEEauthorblockN{Olivier Marin}
+\IEEEauthorblockA{LIP6\\
+Université Pierre et Marie Curie\\
+Paris, France}}
+
+\maketitle
+
+
+\begin{abstract}
+  %\boldmath
+MMOGs (Massively Multiplayer Online Games) are getting ever more popular, but current game server architectures do not scale with the number of players. Instead of addressing the issue, the most common workaround in the industry is to use multiple distinct and non communicating game servers.
+After a brief overview of existing game server architectures and methods to distribute server load, this position paper outlines another kind of architecture that should scale and discusses the difficulty of evaluating game platforms on a large scale.
+\end{abstract}
+
+\section{Introduction}
+Designing a scalable game server architecture that guarantees availability for every player is no easy task.
+An MMOG server must accomodate a large number of connected players,
+% (usually more than 1000) 
+offering each of them a consistent view of the game world and the best possible quality of service for a great gaming experience. In particular, short response times for player actions are often essential~\cite{latency_can_kill}. 
+
+Adapting the capacity of the game server architecture achieve satisfactory availability is very complex because the number of players connected to a game varies significantly during the day. Figure~\ref{fig:player_day_evol} shows the wide variation of the average number of players connected to a single \textit{World of Warcraft Realm} during the day between January and September 2006~\cite{is_server_consolidation_benefical}: it becomes very crowded around 11pm and almost deserted around 7am. Such a variation can lead to a game server crash if the server is not powerful enough. In fact, game server architectures have a long tradition of crashing every time a new highly anticipated game is released. Usually the main solution is to highly oversize the game server to absorb player peaks. However this leads to a higher cost of the server architecture, with mostly underused machines.
+
+
+\begin{figure}
+	\centering
+	\begin{sideways}\qquad\quad~Number of players\end{sideways}
+	\begin{subfigure}[b]{7.5cm}
+		\centering
+		\includegraphics[width=\textwidth]{player_day_evol.png}\\
+		Hour of the day
+	\end{subfigure}
+	\\[0.2cm]
+	\caption{Average daily distribution of the number of connected players in a single World of Warcraft realm}
+	\label{fig:player_day_evol}
+\end{figure}
+
+
+Adding to this complexity, the distribution of player avatars in the game world is very skewed. Players often congregate around ``hotspots'' like towns. Different methods of splitting the game world help reduce the load of a single machine hosting the game server.
+
+\section{Virtual World Partitioning}
+
+Several partitioning methods that are common to different architectures allow the management of very large amounts of players.
+
+\textit{Zoning} divides the world in different zones managed by different machines. Game designers often separate these zones with fixed and arbitrary geographical limits. Players may incur a significant waiting time (\textit{loading screen}) between these zones while they transferred between servers. Connecting players to two servers in an ``overlap'' zone at the border can acheive seamless transfers. Zones borders can also be dynamic to avoid player congestions, but dynamic zoning is more complex and costly, especially when player mobility is high.
+
+Instead of cutting the world into zones, \textit{Sharding} consists in duplicating the world and separating players into small groups: each group plays on a different copy of the world, called a ``Realm'' or a ``World'' in most games. Analogous to poker tables, shards can be added according to the demand, but they remain fully separate and there can be no communication/interaction among them.
+
+\textit{Instancing} corresponds to having multiple copy of a zone, each copy having a smaller amount of player. Each instance can be handled by a different server. This can lead to strange situations, like having a meeting at some place, but players cannot see each other. This is how ``dungeons'' in role playing games are often managed to have the same content played by different groups without interference.
+
+\textit{Cloning} consists in multiple machines that manage the same zone. This method allows concurrent computations associated with the same zone, such as pathfinding for different units in real time strategy games.
+
+The problem with Sharding and Instancing is that players cannot really play together. They play in small groups that have no interaction between one another. The cloning method is not always applicable because it can involve multiple locking between servers that modify the same values, which can lead to a very high latency. The efficiency of zoning is closely tied to player locations that can vary drastically during the game.
+
+
+\section{Game Server Architectures}
+
+Different architectures support these partitioning strategies, the most common being the \textit{Client-Server} architecture. The server handles all update requests from every player, updates the current world state accordingly and sends back player views of the world. This architecture may involve multiple machines with load-balancing mechanisms. However, as a server can only handle a finite number of players, the number of players a static number of servers can handle is also finite. Hence this architecture does not really scale up to an unlimited number of players and is really vulnerable to machine crashes.
+
+\textit{Peer-to-Peer} architectures incorporate the server logic into the client program: the architecture uses CPU power and network capacity of the players to contribute to the server power. However, game editors are reticent to this kind of architecture. One reason is that this prevents monthly subscription schemes: since all the server logic is already embedded into the client, players can freely set up their own virtual world. It also involves more development as churn and cheating are harder to handle. As cheating is a real problem on a persistent world (the cheat becomes a permanent advantage), it is carefully checked. This implies a bigger latency due to the need of agreement on legal player actions.
+
+Hybrid solutions retain the weaknesses of both previous architectures. For instance, \textit{Super Peers} hosted either on player nodes or on trusted servers represent single points of failure.
+
+A proposed alternative is an architecture that provisions VMs on a Cloud service. The game server launches new VMs during load peaks, and shuts them down when the load decreases.
+
+\section{Our Case for Simulation}
+
+To the best of our knowledge, the literature on \textit{Cloud Gaming} does not yet comprise any algorithms that handle insertions and deletions of VMs on demand. In an academic context, Cloud computing is hard to experiment on because of its cost. Besides, simulation facilitates automation of the experiments and allows their reproducilbility: same latencies, same player mobility, \ldots
+
+Another issue is that provisioning algorithms depend mostly on player distribution inside the game world because their aim is to adapt the sharing of the world between servers. 
+Unfortunately there are few player movement traces available and many of them lask precision. For instance, available World of Warcraft traces indicate only the zone of the player and not the exact position. We will therefore  have to generate realistic traces to test our algorithms.
+
+\section{Generation of Player Mobility Traces}
+
+\begin{figure}
+  \centering
+  \framebox{\includegraphics[width=6cm]{nuage_mono.png}}
+  \\[0.2cm]
+  \caption{An example of avatar distribution on a map: each dot represents a player}
+  \label{fig:nuage}
+\end{figure}
+
+Our model is a refinement of the ``Blue Banana'' model~\cite{blue_banana}. Players gather around hotspots in a power law density. They move on short distances inside a hotspot and travel in straight lines between hotspots similarly to Lévy Flights. This mimics movements of people around real-life cities, where it's harder to move in the center of the city and highways concentrate traffic between cities. Most game worlds include forbidden zones such as oceans or high mountains on the map: our model integrates such zones that prevent player movement. Our model also accounts for player connections/disconnections along daily player variations.
+
+\section{Further work}
+
+Our goal is to generate realistic traces to simulate game server architectures. Straight line movements between hotspots don't take into account roads or teleports which change player paths and are often present in MMOGs. Real players don't move with straight lines either, and must have randomness
+
+\bibliographystyle{IEEEtran}
+\bibliography{references}
+
+\end{document}
