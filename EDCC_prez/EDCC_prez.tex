@@ -1,0 +1,107 @@
+\documentclass{beamer}
+
+\usepackage[french]{babel}
+\usepackage[T1]{fontenc}
+\usepackage[utf8]{inputenc}
+\usepackage{rotating}
+\usepackage{array}
+
+\usetheme{Warsaw}
+
+\title[Scalability and availability for MMOG]{Scalability and availability\\ for massively multiplayer online games}
+\author{Olivier Marin, Sébastien Monnet, \underline{Guillaume Turchini}}
+\institute{EDCC}
+\date{sept. 2015}
+
+\setbeamertemplate{navigation symbols}{}
+
+\begin{document}
+
+\begin{frame}
+  \titlepage
+\end{frame}
+
+\begin{frame}
+  \frametitle{Context : MMOG}
+  %\framesubtitle{exemple de sous-titre}
+  \begin{itemize}
+    \item{Strict performance constraints}
+    \item{High scale (millions of players concurrently)}
+    \item{High variation in number and in geographic position}
+  \end{itemize}
+  \vspace{0.5cm}
+
+  \centering
+  \begin{tabular}{cc}
+    \begin{sideways}\scriptsize{Number of players}\end{sideways} &
+    \includegraphics[width=5cm]{player_day_evol.png}\\
+    & \scriptsize{Hour of the day}
+  \end{tabular}
+  
+  \scriptsize\textbf{Average daily distribution of the number of connected players in a single World of Warcraft realm}\\
+
+ 
+\end{frame}
+
+\begin{frame}
+  \frametitle{Issues}
+  \begin{itemize}
+    \item{Scaling}
+    \begin{itemize}
+      \item{Sharding \qquad \raisebox{-0.5\height}{\includegraphics[width=3cm]{sharding.png}} \qquad $\Rightarrow$ non unified world}
+      \item{Cloud Gaming (streaming) \raisebox{-0.5\height}{\includegraphics[width=6cm]{cloud_gaming.png}} $\Rightarrow$~specific~hardware}
+    \end{itemize}
+  \end{itemize}
+
+  
+\end{frame}
+
+\begin{frame}
+  \frametitle{Proposition}
+  \begin{itemize}
+    \item{Use VMs in Cloud}
+    \begin{itemize}
+      \item{High Scale}
+      \item{High Price for experimentation}
+      \item{Development and debugging is hard\vspace{5mm}}
+    \end{itemize}
+    \item{Simulation approach}
+    \begin{itemize}
+      \item{Reproducibility}
+      \item{Costs less}
+      \item{Time gain}
+    \end{itemize}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Metrics}
+  \begin{itemize}
+    \item{Latency\vspace{2mm}}
+    \item{CPU\vspace{2mm}}
+    \item{Network\vspace{2mm}}
+    \item{Price (number of server and use time)\vspace{2mm}}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Mobility Model}
+  \begin{itemize}
+    \item{Lévy's flight}
+    \item{Hotspots (Blue Banana)\vspace{2mm}}
+    \includegraphics[width=8cm]{usa_by_night.jpg}\\
+    \item{Density}
+    \item{Hourly variation}
+  \end{itemize}
+\end{frame}
+
+\begin{frame}
+  \frametitle{Further Work}
+  \begin{itemize}
+    \item{Better mobility model\vspace{1cm}}
+    \item{Hybrid architecture using P2P for certain tasks}
+  \end{itemize}
+\end{frame}
+
+\end{document}
+
